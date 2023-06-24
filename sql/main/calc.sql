@@ -4,11 +4,12 @@ create table results (id INT, response text);
 /*1.	Вывести максимальное количество человек в одном бронировании*/
 
 INSERT INTO results
-SELECT 1, count(book_ref) a
-FROM tickets
-group by book_ref
-order by a desc
-limit 1;
+select 1 as id, max(pass) as max_pass
+	from (select count(t2.passenger_id) as pass, t1.book_ref
+		from bookings t1
+		left join tickets t2 on t1.book_ref = t2.book_ref
+		group by t1.book_ref ) as t3 ;
+
 
 /*2.	Вывести количество бронирований с количеством людей больше среднего значения людей на одно бронирование*/
 
