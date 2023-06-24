@@ -57,12 +57,11 @@ GROUP BY t.book_ref;
 /*5.	Вывести максимальное количество перелётов на бронь*/
 
 INSERT INTO results
-select 5, count(book_ref) c
-from bookings b
-join tickets t using(book_ref)
-join ticket_flights tf using(ticket_no)
+select 5, count(book_ref) a
+from bookings t1 join tickets t2 using(book_ref)
+join ticket_flights t3 using(ticket_no)
 group by book_ref
-order by c desc
+order by a desc
 limit 1;
 
 /*6.	Вывести максимальное количество перелётов на пассажира в одной брони*/
@@ -317,3 +316,4 @@ SELECT 21, t1.departure_city FROM
 	having extract (epoch from avg(actual_duration))/60/60 > 3
 	order by 3 desc
 	limit 5) t1;
+
