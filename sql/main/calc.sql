@@ -41,17 +41,13 @@ order by count(ticket_no) desc limit 1);
 
 INSERT INTO results
 SELECT 4, concat_ws('|', t.book_ref, string_agg(t.passenger_info, '|'))
-FROM (
-         SELECT book_ref
+FROM ( SELECT book_ref
               , concat_ws('|', passenger_id, passenger_name, contact_data) AS passenger_info
          FROM bookings.tickets
-         WHERE book_ref IN (
-                               SELECT book_ref
+         WHERE book_ref IN ( SELECT book_ref
                                FROM bookings.tickets
                                GROUP BY book_ref
-                               HAVING count(passenger_id) = 3
-                           )
-     ) t
+                               HAVING count(passenger_id) = 3)) t
 GROUP BY t.book_ref;
 
 /*5.	Вывести максимальное количество перелётов на бронь*/
@@ -90,8 +86,7 @@ limit 1;
 INSERT INTO results
 select 8, concat(q.passenger_id, '|', q.passenger_name, '|', q.email, '|', q.phone, '|', q.sum_flights)
 from
-	(
-	select a.passenger_id
+	( select a.passenger_id
 		  ,a.passenger_name
 		  ,cast(a.contact_data::json->'email' as text) as email
 	  ,cast(a.contact_data::json->'phone' as text) as phone
@@ -101,16 +96,12 @@ from
 			on a.ticket_no = b.ticket_no
 	group by a.passenger_id, a.passenger_name, a.contact_data
 	having sum(b.amount) = (select min(f.summa)
-							from
-								(
-								select sum(b.amount) as summa
+							from (select sum(b.amount) as summa
 								from bookings.tickets a
 									full outer join bookings.ticket_flights b
 										on a.ticket_no = b.ticket_no
-								group by a.passenger_id
-								) as f)
-	order by a.passenger_id, a.passenger_name, email, phone
-	) as q;
+								group by a.passenger_id) as f)
+	order by a.passenger_id, a.passenger_name, email, phone) as q;
 
 /*9.	Вывести контактную информацию по пассажиру(ам) (passenger_id, passenger_name, contact_data) и общее время в полётах, для пассажира, который провёл максимальное время в полётах*/
 
@@ -144,16 +135,10 @@ from bookings.flights f
 	left join bookings.airports a
 		on f.departure_airport = a.airport_code
 group by a.city
-having count(distinct f.arrival_airport) = (
-										select min(a.count)
-										from
-											(
-											select departure_airport
-												  ,count(distinct arrival_airport) as count
+having count(distinct f.arrival_airport) = (select min(a.count) from
+											(select departure_airport, count(distinct arrival_airport) as count
 											from bookings.flights
-											group by departure_airport
-											) as a
-											)
+											group by departure_airport) as a)
 order by city;
 
 /*12.	Вывести пары городов, у которых нет прямых сообщений исключив реверсные дубликаты*/
@@ -169,16 +154,12 @@ from
 		select a.city as airoport_dep, b.city as airoport_arr
 		from bookings.airports a
 			cross join bookings.airports b
-
 		except
-
 		select distinct departure_city, arrival_city
 		from bookings.flights_v
 		) as z
 	where z.airoport_dep <= z.airoport_arr
-
 	union
-
 	select z.airoport_arr
 		  ,z.airoport_arr
 	from
@@ -186,9 +167,7 @@ from
 		select a.city as airoport_dep, b.city as airoport_arr
 		from bookings.airports a
 			cross join bookings.airports b
-
 		except
-
 		select distinct departure_city, arrival_city
 		from bookings.flights_v
 		) as z
@@ -291,7 +270,7 @@ where count_flight = min_count_flight
 order by date_departure;
 
 
-/*20.	Вывести среднее количество вылетов в день из Москвы за 09 месяц 2016 года*/
+/*20.	Вывести среднее количество вылетов в день из Москвы за 08 месяц 2017 года*/
 
 INSERT INTO results
 SELECT 20, avg(fl_cnt) FROM
